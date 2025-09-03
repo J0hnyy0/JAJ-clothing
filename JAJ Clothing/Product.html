@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargo Shorts - JAJ Clothing</title>
+    <link rel="stylesheet" href="CSS/product.css">
+    <link rel="stylesheet" href="CSS/checkout.css">
+    <script src="JS/auth.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="Homepage.html" class="logo">JAJ Clothing</a>
+            <nav class="nav-right">
+                <a href="collection.html" class="nav-link">Collection</a>
+                <div class="cart-icon" onclick="toggleCart()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7.00488 7.99966V5.99966C7.00488 3.23824 9.24346 0.999664 12.0049 0.999664C14.7663 0.999664 17.0049 3.23824 17.0049 5.99966V7.99966H20.0049C20.5572 7.99966 21.0049 8.44738 21.0049 8.99966V20.9997C21.0049 21.5519 20.5572 21.9997 20.0049 21.9997H4.00488C3.4526 21.9997 3.00488 21.5519 3.00488 20.9997V8.99966C3.00488 8.44738 3.4526 7.99966 4.00488 7.99966H7.00488ZM7.00488 9.99966H5.00488V19.9997H19.0049V9.99966H17.0049V11.9997H15.0049V9.99966H9.00488V11.9997H7.00488V9.99966ZM9.00488 7.99966H15.0049V5.99966C15.0049 4.34281 13.6617 2.99966 12.0049 2.99966C10.348 2.99966 9.00488 4.34281 9.00488 5.99966V7.99966Z"></path></svg>
+                    <div class="cart-count" id="cartCount">0</div>
+                </div>
+                
+                <!-- Auth buttons (shown when not logged in) -->
+                <div class="auth-buttons" id="authButtons">
+                    <a href="Register.html" class="nav-link">Login</a>
+                    <a href="Register.html" class="sign-up-btn">Sign Up</a>
+                </div>
+                
+                <!-- Profile menu (shown when logged in) -->
+                <div class="profile-menu" id="profileMenu">
+                    <button class="profile-trigger" onclick="toggleProfileDropdown()">
+                        <div class="profile-avatar" id="profileAvatar">U</div>
+                        <span class="profile-name" id="profileName">User</span>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                            <path d="M6 8L2 4h8l-4 4z"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <a href="Profile.html" class="profile-dropdown-item">
+                            <svg class="profile-icon" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            My Profile
+                        </a>
+                        <a href="#" class="profile-dropdown-item logout" onclick="showLogoutPopup(); return false;">
+                            <svg class="profile-icon" viewBox="0 0 24 24">
+                                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                            </svg>
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+        <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2>Shopping Cart</h2>
+            <button class="cart-close-btn" onclick="toggleCart()">×</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be dynamically added here -->
+        </div>
+        <div class="cart-total" id="cartTotal">Total: ₱0.00</div>
+        <button class="checkout-btn">Proceed to Checkout</button>
+    </div>
+
+    <!-- Add to Cart Confirmation Popup -->
+    <div id="cartPopup" class="modal">
+    <div class="modal-content">
+        <p id="cartPopupMessage">Add this item to your cart?</p>
+        <div class="popup-buttons">
+        <button class="confirm-btn" onclick="confirmAddToCart()">OK</button>
+        <button class="cancel-btn" onclick="closeCartPopup()">Cancel</button>
+        </div>
+    </div>
+    </div>
+
+
+    <!-- Product Detail Page -->
+    <main class="product-detail">
+        <div class="container">
+            <a href="collection.html" class="back-link">
+                <svg class="back-icon" viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                Back to Collection
+            </a>
+
+            <div class="product-content">
+                <!-- Product Images -->
+                <div class="product-images">
+                    <div class="main-image">
+                        <button class="image-arrow left-arrow" onclick="prevImage()" aria-label="Previous image">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" viewBox="0 0 24 24" class="stroke-blue-300">
+                                <path stroke-linejoin="round" stroke-linecap="round" stroke-width="1.5" d="M11 6L5 12M5 12L11 18M5 12H19"></path>
+                            </svg>
+                        </button>
+                        <img src="/placeholder.svg?height=400&width=400" alt="Cargo Shorts" id="mainImage">
+                        <button class="image-arrow right-arrow" onclick="nextImage()" aria-label="Next image" style="transform: scaleX(-1) translateY(-50%);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" viewBox="0 0 24 24" class="stroke-blue-300">
+                                <path stroke-linejoin="round" stroke-linecap="round" stroke-width="1.5" d="M11 6L5 12M5 12L11 18M5 12H19"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="thumbnail-images">
+                        <div class="thumbnail active" onclick="changeImage('/placeholder.svg?height=400&width=400', 0)">
+                            <img src="/placeholder.svg?height=60&width=60" alt="Front view">
+                        </div>
+                        <div class="thumbnail" onclick="changeImage('/placeholder.svg?height=400&width=400', 1)">
+                            <img src="/placeholder.svg?height=60&width=60" alt="White variant">
+                        </div>
+                        <div class="thumbnail" onclick="changeImage('/placeholder.svg?height=400&width=400', 2)">
+                            <img src="/placeholder.svg?height=60&width=60" alt="Size chart">
+                        </div>
+                    </div>
+
+                    <div class="image-indicators">
+                        <div class="indicator active" onclick="changeImageByIndicator(0)"></div>
+                        <div class="indicator" onclick="changeImageByIndicator(1)"></div>
+                        <div class="indicator" onclick="changeImageByIndicator(2)"></div>
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="product-info">
+                    <h1 class="product-title">Cargo Shorts</h1>
+                    <div class="product-price">₱554.99</div>
+                    <p class="product-description">
+                        Functional and stylish cargo shorts with plenty of pocket space. Made from durable cotton blend fabric, perfect for casual wear and outdoor activities.
+                    </p>
+
+                    <!-- Color Options -->
+                    <div class="product-option">
+                        <label class="option-label">Color: <span id="selectedColor">Black</span></label>
+                        <div class="color-options">
+                            <div class="color-option black active" onclick="selectColor('black', 'Black')" data-color="black"></div>
+                            <div class="color-option white" onclick="selectColor('white', 'White')" data-color="white"></div>
+                        </div>
+                    </div>
+
+                    <!-- Size Options -->
+                    <div class="product-option">
+                        <label class="option-label">Size</label>
+                        <div class="size-options">
+                            <button class="size-option" onclick="selectSize(this)">XS</button>
+                            <button class="size-option" onclick="selectSize(this)">S</button>
+                            <button class="size-option" onclick="selectSize(this)">G</button>
+                            <button class="size-option active" onclick="selectSize(this)">M</button>
+                            <button class="size-option" onclick="selectSize(this)">L</button>
+                            <button class="size-option" onclick="selectSize(this)">XL</button>
+                            <button class="size-option" onclick="selectSize(this)">2XL</button>
+                            <button class="size-option" onclick="selectSize(this)">3XL</button>
+                        </div>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="product-option">
+                        <label class="option-label">Quantity</label>
+                        <div class="quantity-section">
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="decreaseQuantity()">−</button>
+                                <input type="number" class="quantity-input" value="1" min="1" id="quantity">
+                                <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="addToCart()">Add to cart</button>
+                        <button class="btn btn-secondary" onclick="buyNow()">Buy it now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Contact Section -->
+            <div class="footer-column">
+            <h3>Contact</h3>
+            <p><strong>Adress:</strong> 742 Evergreen Terrace, Springfield </p>
+            <p><strong>Phone:</strong> +63962 461 7897</p>
+            <p><strong>Email:</strong> 123johnjose@gmail.com</p>
+            <h4>Follow Us</h4>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="footer-column">
+            <h3>About</h3>
+            <ul>
+                <li><a>About us</a></li>
+                <li><a>Privacy Policy</a></li>
+                <li><a>Terms & Conditions</a></li>
+                <li><a>Contact us</a></li>
+            </ul>
+            </div>
+
+            <!-- Shop Section -->
+            <div class="footer-column">
+            <h3>Shop</h3>
+            <ul>
+                <li><a>Tops</a></li>
+                <li><a>Hoodies</a></li>
+                <li><a>Bottoms</a></li>
+                <li><a>Hats</a></li>
+            </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            © 2025 JAJ Clothing. All Rights Reserved.
+        </div>
+    </footer>
+
+
+    <!-- Logout Confirmation Popup -->
+    <div id="logoutPopup" class="modal">
+        <div class="modal-content">
+            <p>Are you sure you want to logout?</p>
+            <button class="confirm-btn" onclick="confirmLogout()">Yes</button>
+            <button class="cancel-btn" onclick="closeLogoutPopup()">No</button>
+        </div>
+    </div>
+    <script src="JS/product.js"></script>
+    <script src="JS/checkout.js"></script>
+</body>
+</html>
