@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAJ Clothing</title>
+    <link rel="stylesheet" href="CSS/homepage.css">
+    <link rel="stylesheet" href="CSS/checkout.css">
+    <script type="module" src="JS/homepage.js"></script>
+    <script src="JS/auth.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="Homepage.html" class="logo">JAJ Clothing</a>
+            <nav class="nav-right">
+                <a href="Collection.html" class="nav-link">Collection</a>
+                <div class="cart-icon" onclick="toggleCart()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7.00488 7.99966V5.99966C7.00488 3.23824 9.24346 0.999664 12.0049 0.999664C14.7663 0.999664 17.0049 3.23824 17.0049 5.99966V7.99966H20.0049C20.5572 7.99966 21.0049 8.44738 21.0049 8.99966V20.9997C21.0049 21.5519 20.5572 21.9997 20.0049 21.9997H4.00488C3.4526 21.9997 3.00488 21.5519 3.00488 20.9997V8.99966C3.00488 8.44738 3.4526 7.99966 4.00488 7.99966H7.00488ZM7.00488 9.99966H5.00488V19.9997H19.0049V9.99966H17.0049V11.9997H15.0049V9.99966H9.00488V11.9997H7.00488V9.99966ZM9.00488 7.99966H15.0049V5.99966C15.0049 4.34281 13.6617 2.99966 12.0049 2.99966C10.348 2.99966 9.00488 4.34281 9.00488 5.99966V7.99966Z"></path></svg>
+                    <div class="cart-count" id="cartCount">0</div>
+                </div>
+                
+                <!-- Auth buttons (shown when not logged in) -->
+                <div class="auth-buttons" id="authButtons">
+                    <a href="Register.html" class="nav-link">Login</a>
+                    <a href="Register.html" class="sign-up-btn">Sign Up</a>
+                </div>
+                
+                <!-- Profile menu (shown when logged in) -->
+                <div class="profile-menu" id="profileMenu">
+                <button class="profile-trigger" onclick="toggleProfileDropdown()">
+                    <div class="profile-avatar" id="profileAvatar">U</div>
+                    <span class="profile-name" id="profileName">User</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                    <path d="M6 8L2 4h8l-4 4z"/>
+                    </svg>
+                </button>
+
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="Profile.html" class="profile-dropdown-item">
+                    <svg class="profile-icon" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    My Profile
+                    </a>
+
+                    <a href="Orderhistory.html" class="profile-dropdown-item">
+                    <svg class="profile-icon" viewBox="0 0 24 24">
+                        <path d="M13 3c-4.97 0-9 4.03-9 9s4.03 9 9 9
+                                9-4.03 9-9-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7
+                                7-7 7 3.13 7 7-3.13 7-7 7zm-.5-13h-1v6l5.25 3.15.75-1.23-4.5-2.67V6z"/>
+                    </svg>
+                    Order History
+                    </a>
+
+                    <a href="#" class="profile-dropdown-item logout" onclick="showLogoutPopup(); return false;">
+                    <svg class="profile-icon" viewBox="0 0 24 24">
+                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58
+                                2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2
+                                2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                    </svg>
+                    Logout
+                    </a>
+                </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Welcome to JAJ Clothing</h1>
+        <p>Discover stylish apparel, curated just for you. Your next favorite outfit is just a click away.</p>
+        <div class="hero-buttons">
+            <a href="Collection.html" class="btn-primary">Explore Collection</a>
+            <a href="Register.html" class="btn-secondary" id="createAccountBtn">Create Account</a>
+        </div>
+    </section>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2>Shopping Cart</h2>
+            <button class="cart-close-btn" onclick="toggleCart()">×</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be dynamically added here -->
+        </div>
+        <div class="cart-total" id="cartTotal">Total: ₱0.00</div>
+        <button class="checkout-btn">Proceed to Checkout</button>
+    </div>
+
+    <!-- Main Content -->
+    <section class="main-content">
+        <div class="content-left">
+            <h2>Quality Fabrics, Unforgettable Style</h2>
+            <p>We believe in quality you can feel. Our designers use only the finest materials to craft pieces that will elevate your wardrobe. From timeless classics to modern trends, there's something for everyone at JAJ Clothing.</p>
+        </div>
+        <div class="product-showcase">
+    <div class="product-image">
+        <div class="product-slideshow" id="productSlideshow">
+            <div class="slide active">
+                <img src="clothings/swhite.png" alt="JAJ Product 24">
+            </div>
+            <div class="slide">
+                <img src="clothings/3hw.png" alt="JAJ Product 6">
+            </div>
+            <div class="slide">
+                <img src="clothings/twhite.png" alt="JAJ Product 28">
+            </div>
+            <div class="slide">
+                <img src="clothings/zb1.png" alt="JAJ Product 29">
+            </div>
+            <div class="slide">
+                <img src="clothings/lblack.png" alt="JAJ Product 14">
+            </div>
+            <div class="slide">
+                <img src="clothings/nwhite.png" alt="JAJ Product 20">
+            </div>
+            <div class="slide">
+                <img src="clothings/2hbb.png" alt="JAJ Product 3">
+            </div>
+            <div class="slide">
+                <img src="clothings/hblack.png" alt="JAJ Product 10">
+            </div>
+            <div class="slide">
+                <img src="clothings/4hw.png" alt="JAJ Product 8">
+            </div>
+            <div class="slide">
+                <img src="clothings/lw3.png" alt="JAJ Product 17">
+            </div>
+            <div class="slide">
+                <img src="clothings/tcb.png" alt="JAJ Product 26">
+            </div>
+            <div class="slide">
+                <img src="clothings/zw1.png" alt="JAJ Product 31">
+            </div>
+            <div class="slide">
+                <img src="clothings/1hw.png" alt="JAJ Product 2">
+            </div>
+            <div class="slide">
+                <img src="clothings/sb2.png" alt="JAJ Product 21">
+            </div>
+            <div class="slide">
+                <img src="clothings/zwhite.png" alt="JAJ Product 32">
+            </div>
+            <div class="slide">
+                <img src="clothings/llw4.png" alt="JAJ Product 16">
+            </div>
+            <div class="slide">
+                <img src="clothings/hb1.png" alt="JAJ Product 9">
+            </div>
+            <div class="slide">
+                <img src="clothings/lwhite.png" alt="JAJ Product 18">
+            </div>
+            <div class="slide">
+                <img src="clothings/tcw.png" alt="JAJ Product 27">
+            </div>
+            <div class="slide">
+                <img src="clothings/4hb.png" alt="JAJ Product 7">
+            </div>
+            <div class="slide">
+                <img src="clothings/sw2.png" alt="JAJ Product 23">
+            </div>
+            <div class="slide">
+                <img src="clothings/3hb.png" alt="JAJ Product 5">
+            </div>
+            <div class="slide">
+                <img src="clothings/llb4.png" alt="JAJ Product 15">
+            </div>
+            <div class="slide">
+                <img src="clothings/zblack.png" alt="JAJ Product 30">
+            </div>
+            <div class="slide">
+                <img src="clothings/nblack.png" alt="JAJ Product 19">
+            </div>
+            <div class="slide">
+                <img src="clothings/2hww.png" alt="JAJ Product 4">
+            </div>
+            <div class="slide">
+                <img src="clothings/hwhite.png" alt="JAJ Product 12">
+            </div>
+            <div class="slide">
+                <img src="clothings/sblack.png" alt="JAJ Product 22">
+            </div>
+            <div class="slide">
+                <img src="clothings/tblack.png" alt="JAJ Product 25">
+            </div>
+            <div class="slide">
+                <img src="clothings/lb3.png" alt="JAJ Product 13">
+            </div>
+            <div class="slide">
+                <img src="clothings/hw1.png" alt="JAJ Product 11">
+            </div>
+            <div class="slide">
+                <img src="clothings/1hb.png" alt="JAJ Product 1">
+            </div>
+            
+            <!-- Slideshow indicators -->
+            <div class="slideshow-indicators">
+                <div class="indicator active" onclick="goToSlide(0)"></div>
+                <div class="indicator" onclick="goToSlide(1)"></div>
+                <div class="indicator" onclick="goToSlide(2)"></div>
+                <div class="indicator" onclick="goToSlide(3)"></div>
+                <div class="indicator" onclick="goToSlide(4)"></div>
+                <div class="indicator" onclick="goToSlide(5)"></div>
+                <div class="indicator" onclick="goToSlide(6)"></div>
+                <div class="indicator" onclick="goToSlide(7)"></div>
+                <div class="indicator" onclick="goToSlide(8)"></div>
+                <div class="indicator" onclick="goToSlide(9)"></div>
+                <div class="indicator" onclick="goToSlide(10)"></div>
+                <div class="indicator" onclick="goToSlide(11)"></div>
+                <div class="indicator" onclick="goToSlide(12)"></div>
+                <div class="indicator" onclick="goToSlide(13)"></div>
+                <div class="indicator" onclick="goToSlide(14)"></div>
+                <div class="indicator" onclick="goToSlide(15)"></div>
+                <div class="indicator" onclick="goToSlide(16)"></div>
+                <div class="indicator" onclick="goToSlide(17)"></div>
+                <div class="indicator" onclick="goToSlide(18)"></div>
+                <div class="indicator" onclick="goToSlide(19)"></div>
+                <div class="indicator" onclick="goToSlide(20)"></div>
+                <div class="indicator" onclick="goToSlide(21)"></div>
+                <div class="indicator" onclick="goToSlide(22)"></div>
+                <div class="indicator" onclick="goToSlide(23)"></div>
+                <div class="indicator" onclick="goToSlide(24)"></div>
+                <div class="indicator" onclick="goToSlide(25)"></div>
+                <div class="indicator" onclick="goToSlide(26)"></div>
+                <div class="indicator" onclick="goToSlide(27)"></div>
+                <div class="indicator" onclick="goToSlide(28)"></div>
+                <div class="indicator" onclick="goToSlide(29)"></div>
+                <div class="indicator" onclick="goToSlide(30)"></div>
+                <div class="indicator" onclick="goToSlide(31)"></div>
+            </div>
+        </div>
+    </div>
+</div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Contact Section -->
+            <div class="footer-column">
+            <h3>Contact</h3>
+            <p><strong>Adress:</strong> 742 Evergreen Terrace, Springfield </p>
+            <p><strong>Phone:</strong> +63962 461 7897</p>
+            <p><strong>Email:</strong> 123johnjose@gmail.com</p>
+            <h4>Follow Us</h4>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="footer-column">
+            <h3>About</h3>
+            <ul>
+                <li><a>About us</a></li>
+                <li><a>Privacy Policy</a></li>
+                <li><a>Terms & Conditions</a></li>
+                <li><a>Contact us</a></li>
+            </ul>
+            </div>
+
+            <!-- Shop Section -->
+            <div class="footer-column">
+            <h3>Shop</h3>
+            <ul>
+                <li><a>Tops</a></li>
+                <li><a>Hoodies</a></li>
+                <li><a>Bottoms</a></li>
+                <li><a>Hats</a></li>
+            </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            © 2025 JAJ Clothing. All Rights Reserved.
+        </div>
+    </footer>
+
+    <!-- Logout Confirmation Popup -->
+    <div id="logoutPopup" class="modal">
+        <div class="modal-content">
+            <p>Are you sure you want to logout?</p>
+            <button class="confirm-btn" onclick="confirmLogout()">Yes</button>
+            <button class="cancel-btn" onclick="closeLogoutPopup()">No</button>
+        </div>
+    </div>
+
+    <script src="JS/homepage.js"></script>
+    <script type="module" src="JS/checkout.js"></script>
+
+</body>
+</html>
