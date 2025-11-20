@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAJ Rider Delivery App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {},
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        #notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            max-width: 400px;
+            width: 90%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+        }
+        #notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-black">
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-white mb-2">JAJ Rider Login</h2>
+                <p class="text-gray-400">Sign in to access your dashboard</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <!-- FIXED: Added for="loginEmail" -->
+                    <label for="loginEmail" class="block text-gray-300 text-sm font-medium mb-2">Email</label>
+                    <input type="email" id="loginEmail" required class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" placeholder="rider@example.com">
+                </div>
+                <div>
+                    <!-- FIXED: Added for="loginPassword" -->
+                    <label for="loginPassword" class="block text-gray-300 text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="loginPassword" required class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
+                    Sign In
+                </button>
+            </form>
+            <div class="mt-6 text-center">
+                <p class="text-gray-400">Don't have an account? 
+                    <a href="#" onclick="showRegister()" class="text-blue-500 hover:text-blue-400 font-semibold">Register</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Page -->
+    <div id="registerPage" class="min-h-screen flex items-center justify-center p-4 hidden">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-white mb-2">JAJ Rider Registration</h2>
+                <p class="text-gray-400">Create your rider account</p>
+            </div>
+            <form id="registerForm" class="space-y-4">
+                <div>
+                    <!-- FIXED: Added for="regName" -->
+                    <label for="regName" class="block text-gray-300 text-sm font-medium mb-2">Full Name</label>
+                    <input type="text" id="regName" required class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500" placeholder="John Doe">
+                </div>
+                <div>
+                    <!-- FIXED: Added for="regEmail" -->
+                    <label for="regEmail" class="block text-gray-300 text-sm font-medium mb-2">Email</label>
+                    <input type="email" id="regEmail" required class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500" placeholder="rider@example.com">
+                </div>
+                <div>
+                    <!-- FIXED: Added for="regPhone" -->
+                    <label for="regPhone" class="block text-gray-300 text-sm font-medium mb-2">Phone Number</label>
+                    <input type="tel" id="regPhone" required class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500" placeholder="+63 XXX XXX XXXX">
+                </div>
+                <div>
+                    <!-- FIXED: Added for="regVehicle" -->
+                    <label for="regVehicle" class="block text-gray-300 text-sm font-medium mb-2">Vehicle Type</label>
+                    <select id="regVehicle" required class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-green-500">
+                        <option value="">Select vehicle</option>
+                        <option value="motorcycle">Motorcycle</option>
+                        <option value="bicycle">Bicycle</option>
+                        <option value="car">Car</option>
+                    </select>
+                </div>
+                <div>
+                    <!-- FIXED: Added for="regPassword" -->
+                    <label for="regPassword" class="block text-gray-300 text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="regPassword" required class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500" placeholder="••••••••">
+                </div>
+                <div>
+                    <!-- FIXED: Added for="regConfirmPassword" -->
+                    <label for="regConfirmPassword" class="block text-gray-300 text-sm font-medium mb-2">Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" required class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors">
+                    Create Account
+                </button>
+            </form>
+            <div class="mt-6 text-center">
+                <p class="text-gray-400">Already have an account? 
+                    <a href="#" onclick="showLogin()" class="text-blue-500 hover:text-blue-400 font-semibold">Sign In</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden">
+        <!-- Header -->
+        <header class="bg-zinc-900 text-white border-b border-zinc-800">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <h1 class="text-2xl font-bold">JAJ Rider Dashboard</h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 bg-zinc-800 px-4 py-2 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <span class="font-medium" id="riderName">Guest</span>
+                    </div>
+                    <button onclick="showLocationModal()" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>My Location</span>
+                    </button>
+                    <button onclick="showLogoutModal()" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Location Tracking Modal -->
+        <div id="locationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        GPS Location Tracking
+                    </h3>
+                    <button onclick="hideLocationModal()" class="text-gray-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="mb-6">
+                    <div id="map" class="border border-zinc-700"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+                        <div class="text-gray-400 text-sm mb-1">Latitude</div>
+                        <div class="text-white font-mono text-lg" id="latDisplay">--</div>
+                    </div>
+                    <div class="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+                        <div class="text-gray-400 text-sm mb-1">Longitude</div>
+                        <div class="text-white font-mono text-lg" id="lngDisplay">--</div>
+                    </div>
+                    <div class="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+                        <div class="text-gray-400 text-sm mb-1">Accuracy</div>
+                        <div class="text-white font-mono text-lg" id="accuracyDisplay">--</div>
+                    </div>
+                    <div class="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+                        <div class="text-gray-400 text-sm mb-1">Last Update</div>
+                        <div class="text-white font-mono text-sm" id="timeDisplay">--</div>
+                    </div>
+                </div>
+                <div class="bg-zinc-800 rounded-lg p-4 border border-zinc-700 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div id="trackingIndicator" class="w-3 h-3 rounded-full bg-gray-500"></div>
+                            <span class="text-white font-medium" id="trackingStatus">Tracking Inactive</span>
+                        </div>
+                        <div class="text-gray-400 text-sm" id="trackingInfo">Click "Start Tracking" to begin</div>
+                    </div>
+                </div>
+                <div class="flex gap-3 flex-wrap">
+                    <button onclick="startTracking()" id="startTrackingBtn" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Start Tracking
+                    </button>
+                    <button onclick="stopTracking()" id="stopTrackingBtn" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors opacity-50 cursor-not-allowed" disabled>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v4z"/>
+                        </svg>
+                        Stop Tracking
+                    </button>
+                    <button onclick="updateLocationOnce()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Update Now
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logout Confirmation Modal -->
+        <div id="logoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 w-full max-w-sm">
+                <h3 class="text-xl font-semibold text-white mb-4">Confirm Logout</h3>
+                <p class="text-gray-400 mb-6">Are you sure you want to log out?</p>
+                <div class="flex justify-end gap-4">
+                    <button id="cancelLogout" class="px-4 py-2 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 transition-colors">Cancel</button>
+                    <button id="confirmLogout" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Log Out</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accept Order Modal -->
+        <div id="acceptModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 w-full max-w-sm">
+                <h3 class="text-xl font-semibold text-white mb-4">Accept Order</h3>
+                <p class="text-gray-400 mb-6">Are you sure you want to accept this order?</p>
+                <div class="flex justify-end gap-4">
+                    <button id="cancelAccept" class="px-4 py-2 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 transition-colors">Cancel</button>
+                    <button id="confirmAccept" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Accept</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decline Order Modal -->
+        <div id="declineModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 w-full max-w-sm">
+                <h3 class="text-xl font-semibold text-white mb-4">Decline Order</h3>
+                <p class="text-gray-400 mb-4">Please select a reason for declining the order:</p>
+                <form id="declineForm" class="space-y-4">
+                    <div>
+                        <!-- FIXED: Added for="declineReason" -->
+                        <label for="declineReason" class="block text-gray-300 text-sm font-medium mb-2 sr-only">Decline Reason</label>
+                        <select id="declineReason" class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-red-500">
+                            <option value="Far location">Far location</option>
+                            <option value="Not available now">Not available now</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div id="otherReasonContainer" class="hidden">
+                        <!-- FIXED: Added for="otherReason" -->
+                        <label for="otherReason" class="block text-gray-300 text-sm font-medium mb-2">Specify Reason</label>
+                        <input type="text" id="otherReason" class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500" placeholder="Enter reason">
+                    </div>
+                    <div class="flex justify-end gap-4">
+                        <button type="button" id="cancelDecline" class="px-4 py-2 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 transition-colors">Cancel</button>
+                        <button type="submit" id="confirmDecline" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Decline</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div id="notification" class="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-white shadow-lg">
+            <p id="notificationText"></p>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-orange-500/20 p-4 rounded-lg">
+                            <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-white" id="statPending">0</div>
+                            <div class="text-gray-400 text-sm">Pending Orders</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-green-500/20 p-4 rounded-lg">
+                            <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-white" id="statActive">0</div>
+                            <div class="text-gray-400 text-sm">Active Deliveries</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-blue-500/20 p-4 rounded-lg">
+                            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-white" id="statCompleted">0</div>
+                            <div class="text-gray-400 text-sm">Completed</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-purple-500/20 p-4 rounded-lg">
+                            <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-white" id="statEarnings">₱0.00</div>
+                            <div class="text-gray-400 text-sm">Earnings</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex gap-3 mb-6 flex-wrap">
+                <button onclick="setTab('pending')" id="tabPending" class="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all bg-zinc-800 text-white border border-zinc-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Pending
+                </button>
+                <button onclick="setTab('active')" id="tabActive" class="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all bg-zinc-900 text-gray-400 hover:bg-zinc-800 border border-zinc-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    Active
+                </button>
+                <button onclick="setTab('completed')" id="tabCompleted" class="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all bg-zinc-900 text-gray-400 hover:bg-zinc-800 border border-zinc-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Completed
+                </button>
+            </div>
+
+            <!-- Orders List -->
+            <div id="ordersList"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ... (Keep ALL the JavaScript from the previous fixed version - NO CHANGES NEEDED)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDy19pPW93gdTisOsKwGw46rcjIMeu1ltM",
+            authDomain: "jaj-clothing-22dbe.firebaseapp.com",
+            projectId: "jaj-clothing-22dbe",
+            storageBucket: "jaj-clothing-22dbe.firebasestorage.app",
+            messagingSenderId: "154288386048",
+            appId: "1:154288386048:web:a96b7a0bef1e9b2a6ba8e5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let currentTab = 'pending';
+        let currentUser = null;
+        let orders = [];
+        let ordersListener = null;
+        let currentDeclineOrderId = null;
+        let currentAcceptOrderId = null;
+        let map = null;
+        let marker = null;
+        let accuracyCircle = null;
+        let isTracking = false;
+        let watchId = null;
+        let lastUpdate = 0;
+
+        // Utility function to format Firebase timestamp
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        // Check for stored user session on page load
+        window.onload = function() {
+            const storedUser = localStorage.getItem('currentUser');
+            if (storedUser) {
+                try {
+                    currentUser = JSON.parse(storedUser);
+                    document.getElementById('riderName').textContent = currentUser.name;
+                    showDashboard();
+                    updateStats();
+                    renderOrders();
+                } catch (e) {
+                    localStorage.removeItem('currentUser');
+                    showLogin();
+                }
+            } else {
+                showLogin();
+            }
+        }
+
+        window.showLogin = function() {
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('registerPage').classList.add('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+        }
+
+        window.showRegister = function() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('registerPage').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('registerPage').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            startOrdersListener();
+        }
+
+        // Show logout confirmation modal
+        window.showLogoutModal = function() {
+            document.getElementById('logoutModal').classList.remove('hidden');
+        }
+
+        // Hide logout confirmation modal
+        function hideLogoutModal() {
+            document.getElementById('logoutModal').classList.add('hidden');
+        }
+
+        // Show accept modal
+        window.confirmAcceptOrder = function(orderId) {
+            if (!orderId) {
+                showMessageModal('Error: No order selected.');
+                return;
+            }
+            currentAcceptOrderId = orderId;
+            document.getElementById('acceptModal').classList.remove('hidden');
+        }
+
+        // Hide accept modal
+        function hideAcceptModal() {
+            document.getElementById('acceptModal').classList.add('hidden');
+            currentAcceptOrderId = null;
+        }
+
+        // Show decline modal
+        window.confirmDeclineOrder = function(orderId) {
+            if (!orderId) {
+                showMessageModal('Error: No order selected.');
+                return;
+            }
+            currentDeclineOrderId = orderId;
+            document.getElementById('declineModal').classList.remove('hidden');
+            document.getElementById('declineForm').reset();
+            document.getElementById('otherReasonContainer').classList.add('hidden');
+            document.getElementById('declineReason').value = 'Far location';
+        }
+
+        // Hide decline modal
+        function hideDeclineModal() {
+            document.getElementById('declineModal').classList.add('hidden');
+            currentDeclineOrderId = null;
+        }
+
+        // Show notification
+        function showMessageModal(message) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize Map
+        function initMap() {
+            if (map) return;
+            map = L.map('map').setView([10.3157, 123.8854], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+        }
+
+        // Show Location Modal
+        window.showLocationModal = function() {
+            document.getElementById('locationModal').classList.remove('hidden');
+            initMap();
+            setTimeout(() => map.invalidateSize(), 400);
+            updateLocationOnce();
+        };
+
+        // Hide Location Modal
+        window.hideLocationModal = function() {
+            document.getElementById('locationModal').classList.add('hidden');
+            if (isTracking) {
+                stopTracking();
+            }
+        }
+
+   // FIXED: Live map updating without resetting zoom and tracking latest location
+        function updateLocationDisplay(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            document.getElementById('latDisplay').textContent = lat.toFixed(6);
+            document.getElementById('lngDisplay').textContent = lng.toFixed(6);
+            document.getElementById('accuracyDisplay').textContent = `${accuracy.toFixed(0)} meters`;
+            document.getElementById('timeDisplay').textContent = new Date().toLocaleTimeString();
+
+            if (!map) return;
+
+            // If marker doesn't exist, create it and center map once
+            if (!marker) {
+                marker = L.marker([lat, lng]).addTo(map);
+                accuracyCircle = L.circle([lat, lng], {
+                    radius: accuracy,
+                    color: '#3b82f6',
+                    fillColor: '#3b82f6',
+                    fillOpacity: 0.1
+                }).addTo(map);
+
+                map.setView([lat, lng], 17); // Initial zoom
+            } else {
+                // Update marker position smoothly without changing zoom
+                marker.setLatLng([lat, lng]);
+                accuracyCircle.setLatLng([lat, lng]);
+                accuracyCircle.setRadius(accuracy);
+                
+                // Pan to new location smoothly if tracking is active
+                if (isTracking) {
+                    map.panTo([lat, lng], {
+                        animate: true,
+                        duration: 0.5
+                    });
+                }
+            }
+        }
+
+        // Save Location to Firebase
+        async function saveLocationToFirebase(position) {
+            if (!currentUser) return;
+            try {
+                const riderRef = doc(db, 'riders', currentUser.id);
+                await updateDoc(riderRef, {
+                    currentLocation: {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        timestamp: new Date(position.timestamp)
+                    },
+                    lastLocationUpdate: new Date()
+                });
+            } catch (error) {
+                console.error('Error saving location:', error);
+                showMessageModal('Failed to save location to server');
+            }
+        }
+
+        // Get Location Once
+        window.updateLocationOnce = function() {
+            if (!navigator.geolocation) {
+                showMessageModal('❌ Geolocation not supported by your browser.');
+                return;
+            }
+
+            showMessageModal('📡 Requesting location access...');
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    updateLocationDisplay(position);
+                    saveLocationToFirebase(position);
+                    showMessageModal('✅ Location updated successfully!');
+                },
+                (error) => {
+                    let errorMsg;
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'Location permission denied. Please allow access.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'Location info unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'Location request timed out.';
+                            break;
+                        default:
+                            errorMsg = 'Unable to get location.';
+                    }
+                    showMessageModal(`❌ ${errorMsg}`);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                }
+            );
+        };
+
+        // Start Continuous Tracking (FIXED)
+        window.startTracking = function() {
+            if (!navigator.geolocation) {
+                showMessageModal('Geolocation is not supported by your browser');
+                return;
+            }
+            if (isTracking) {
+                showMessageModal('Tracking is already active');
+                return;
+            }
+
+            isTracking = true;
+            document.getElementById('trackingIndicator').className = 'w-3 h-3 rounded-full bg-green-500 animate-pulse';
+            document.getElementById('trackingStatus').textContent = 'Tracking Active';
+            document.getElementById('trackingInfo').textContent = 'Updating live location...';
+            document.getElementById('startTrackingBtn').disabled = true;
+            document.getElementById('stopTrackingBtn').disabled = false;
+
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    updateLocationDisplay(position);   // update map marker
+                    saveLocationToFirebase(position);  // save real-time location
+                },
+                (error) => {
+                    console.error('Tracking error:', error);
+                    showMessageModal('Tracking error occurred');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 20000,
+                    maximumAge: 0
+                }
+            );
+
+            showMessageModal('✅ Tracking started');
+        };
+
+
+        // Stop Tracking
+        window.stopTracking = function() {
+            if (!isTracking) return;
+            isTracking = false;
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            document.getElementById('trackingIndicator').className = 'w-3 h-3 rounded-full bg-gray-500';
+            document.getElementById('trackingStatus').textContent = 'Tracking Inactive';
+            document.getElementById('trackingInfo').textContent = 'Click "Start Tracking" to begin';
+            document.getElementById('startTrackingBtn').disabled = false;
+            document.getElementById('stopTrackingBtn').disabled = true;
+            document.getElementById('startTrackingBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+            document.getElementById('stopTrackingBtn').classList.add('opacity-50', 'cursor-not-allowed');
+            showMessageModal('⏹️ Location tracking stopped');
+        }
+
+        // Login Form
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showMessageModal('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const ridersRef = collection(db, 'riders');
+                const q = query(ridersRef, where('email', '==', email));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    const riderDoc = querySnapshot.docs[0];
+                    const riderData = riderDoc.data();
+                    
+                    if (riderData.password === password) {
+                        currentUser = { 
+                            id: riderDoc.id,
+                            name: riderData.name, 
+                            email: email,
+                            ...riderData
+                        };
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        document.getElementById('riderName').textContent = currentUser.name;
+                        showDashboard();
+                        updateStats();
+                        renderOrders();
+                        showMessageModal('✅ Login successful!');
+                    } else {
+                        showMessageModal('❌ Invalid password!');
+                    }
+                } else {
+                    showMessageModal('❌ Rider not found! Please register first.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showMessageModal('❌ Login failed. Please try again.');
+            }
+        });
+
+        // Register Form
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const vehicle = document.getElementById('regVehicle').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            if (!name || !email || !phone || !vehicle || !password || !confirmPassword) {
+                showMessageModal('Please fill in all fields');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showMessageModal('❌ Passwords do not match!');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessageModal('❌ Password must be at least 6 characters');
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, 'riders'), {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    vehicle: vehicle,
+                    password: password,
+                    status: 'active',
+                    createdAt: new Date()
+                });
+                showMessageModal('✅ Registration successful! Please login.');
+                showLogin();
+                document.getElementById('registerForm').reset();
+            } catch (error) {
+                console.error('Registration error:', error);
+                if (error.code === 'firestore/permission-denied') {
+                    showMessageModal('❌ Registration failed. Email already exists.');
+                } else {
+                    showMessageModal('❌ Registration failed. Please try again.');
+                }
+            }
+        });
+
+        // Logout
+        window.logout = function() {
+            if (ordersListener) {
+                ordersListener();
+                ordersListener = null;
+            }
+            currentUser = null;
+            orders = [];
+            localStorage.removeItem('currentUser');
+            showLogin();
+            document.getElementById('loginForm').reset();
+        }
+
+        // Modal Event Listeners
+        document.getElementById('confirmLogout').addEventListener('click', function() {
+            logout();
+            hideLogoutModal();
+        });
+
+        document.getElementById('cancelLogout').addEventListener('click', function() {
+            hideLogoutModal();
+        });
+
+        document.getElementById('cancelAccept').addEventListener('click', function() {
+            hideAcceptModal();
+        });
+
+        document.getElementById('confirmAccept').addEventListener('click', async function() {
+            if (!currentAcceptOrderId) {
+                showMessageModal('Error: No order selected.');
+                return;
+            }
+            try {
+                await updateOrderStatus(currentAcceptOrderId, "shipped");
+                hideAcceptModal();
+            } catch (error) {
+                console.error('Accept error:', error);
+            }
+        });
+
+        document.getElementById('cancelDecline').addEventListener('click', function() {
+            hideDeclineModal();
+        });
+
+        document.getElementById('declineReason').addEventListener('change', function() {
+            const otherReasonContainer = document.getElementById('otherReasonContainer');
+            if (this.value === 'Other') {
+                otherReasonContainer.classList.remove('hidden');
+            } else {
+                otherReasonContainer.classList.add('hidden');
+                document.getElementById('otherReason').value = '';
+            }
+        });
+
+        document.getElementById('declineForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!currentDeclineOrderId) {
+                showMessageModal('Error: No order selected.');
+                return;
+            }
+            
+            const reasonSelect = document.getElementById('declineReason').value;
+            let reason = reasonSelect;
+            
+            if (reasonSelect === 'Other') {
+                reason = document.getElementById('otherReason').value.trim();
+                if (!reason) {
+                    showMessageModal('Please specify a reason for declining.');
+                    return;
+                }
+            }
+            
+            try {
+                await declineOrder(currentDeclineOrderId, reason);
+                hideDeclineModal();
+            } catch (error) {
+                console.error('Error submitting decline form:', error);
+                showMessageModal('Failed to decline order. Please try again.');
+            }
+        });
+
+        function startOrdersListener() {
+            if (!currentUser || ordersListener) return;
+            
+            const ordersRef = collection(db, 'orders');
+            const q = query(ordersRef, where('assignedRider', '==', currentUser.id));
+            
+            ordersListener = onSnapshot(q, (snapshot) => {
+                orders = [];
+                snapshot.forEach((doc) => {
+                    orders.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                orders.sort((a, b) => {
+                    const dateA = a.createdAt?.seconds || 0;
+                    const dateB = b.createdAt?.seconds || 0;
+                    return dateB - dateA;
+                });
+                updateStats();
+                renderOrders();
+            }, (error) => {
+                console.error('Orders listener error:', error);
+                showMessageModal('Failed to load orders. Please refresh.');
+            });
+        }
+
+        window.setTab = function(tab) {
+            currentTab = tab;
+            const tabs = {
+                'pending': 'tabPending',
+                'active': 'tabActive',
+                'completed': 'tabCompleted'
+            };
+            
+            Object.keys(tabs).forEach(t => {
+                const btn = document.getElementById(tabs[t]);
+                if (t === tab) {
+                    btn.className = 'flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all bg-zinc-800 text-white border border-zinc-700';
+                } else {
+                    btn.className = 'flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all bg-zinc-900 text-gray-400 hover:bg-zinc-800 border border-zinc-800';
+                }
+            });
+            renderOrders();
+        }
+
+        function updateStats() {
+            const pendingOrders = orders.filter(o => 
+                o.status === 'confirmed' || o.status === 'processing'
+            );
+            const activeOrders = orders.filter(o => o.status === 'shipped');
+            const completedOrders = orders.filter(o => o.status === 'delivered');
+            
+            let totalEarnings = 0;
+            completedOrders.forEach(o => {
+                totalEarnings += (o.total || 0) * 0.1;
+            });
+            
+            document.getElementById('statPending').textContent = pendingOrders.length;
+            document.getElementById('statActive').textContent = activeOrders.length;
+            document.getElementById('statCompleted').textContent = completedOrders.length;
+            document.getElementById('statEarnings').textContent = `₱${totalEarnings.toFixed(2)}`;
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            try {
+                const orderRef = doc(db, 'orders', orderId);
+                await updateDoc(orderRef, {
+                    status: status,
+                    updatedAt: new Date(),
+                    riderAction: "accepted",
+                    shippedAt: new Date()
+                });
+                showMessageModal("✅ Order accepted successfully!");
+                renderOrders();
+            } catch (error) {
+                console.error('Error accepting order:', error);
+                showMessageModal('❌ Failed to accept order. Please try again.');
+                throw error;
+            }
+        }
+
+        async function declineOrder(orderId, reason) {
+            try {
+                const orderRef = doc(db, 'orders', orderId);
+                await updateDoc(orderRef, {
+                    status: "pending",
+                    assignedRider: null,
+                    declinedBy: currentUser?.id || 'unknown',
+                    declineReason: reason,
+                    updatedAt: new Date()
+                });
+                showMessageModal("✅ Order declined and returned to admin.");
+                renderOrders();
+            } catch (error) {
+                console.error('Error declining order:', error);
+                showMessageModal('❌ Failed to decline order. Please try again.');
+                throw error;
+            }
+        }
+
+        window.completeDelivery = async function(orderId) {
+            try {
+                const orderRef = doc(db, 'orders', orderId);
+                await updateDoc(orderRef, {
+                    status: 'delivered',
+                    deliveredAt: new Date(),
+                    updatedAt: new Date()
+                });
+                showMessageModal('✅ Order marked as delivered! Great job!');
+                renderOrders();
+            } catch (error) {
+                console.error('Error completing delivery:', error);
+                showMessageModal('❌ Failed to complete delivery. Please try again.');
+            }
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('ordersList');
+            let filteredOrders = [];
+            
+            if (currentTab === 'pending') {
+                filteredOrders = orders.filter(o => 
+                    o.status === 'confirmed' || o.status === 'processing'
+                );
+            } else if (currentTab === 'active') {
+                filteredOrders = orders.filter(o => o.status === 'shipped');
+            } else if (currentTab === 'completed') {
+                filteredOrders = orders.filter(o => o.status === 'delivered');
+            }
+            
+            if (filteredOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-zinc-900 rounded-lg p-12 text-center border border-zinc-800">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                        </svg>
+                        <h3 class="text-xl font-semibold text-gray-300 mb-2">No ${currentTab} orders</h3>
+                        <p class="text-gray-500">Orders will appear here when assigned by admin</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredOrders.map(order => {
+                const orderDate = formatTimestamp(order.createdAt);
+                const customerName = `${order.customerInfo?.firstName || ''} ${order.customerInfo?.lastName || ''}`.trim() || 'N/A';
+                const statusClass = 
+                    order.status === 'confirmed' || order.status === 'processing' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
+                    order.status === 'shipped' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                    'bg-blue-500/20 text-blue-400 border border-blue-500/30';
+                
+                return `
+                    <div class="bg-zinc-900 rounded-lg p-6 border border-zinc-800 mb-6">
+                        <div class="flex items-start justify-between mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-white mb-2">Order #${order.id.substring(0, 8)}</h3>
+                                <div class="flex items-center gap-4 text-sm text-gray-400">
+                                    <div class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                        </svg>
+                                        ${customerName}
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        ${orderDate}
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="px-4 py-2 rounded-lg text-sm font-semibold ${statusClass}">
+                                ${order.status.toUpperCase()}
+                            </span>
+                        </div>
+                        <div class="mb-6 p-4 bg-zinc-800 rounded-lg border border-zinc-700">
+                            <h4 class="font-semibold text-white mb-2 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                Delivery Address
+                            </h4>
+                            <p class="text-gray-300">${order.customerInfo?.address || 'N/A'}, ${order.customerInfo?.city || 'N/A'}, ${order.customerInfo?.province || 'N/A'} ${order.customerInfo?.zipCode || ''}</p>
+                            <p class="text-gray-400 mt-2">Contact: ${order.customerInfo?.phone || 'N/A'}</p>
+                        </div>
+                        <div class="space-y-4 mb-6">
+                            ${order.items && order.items.length > 0 ? order.items.map(item => `
+                                <div class="flex items-center gap-4 p-4 bg-zinc-800 rounded-lg border border-zinc-700">
+                                    <img src="${item.image || 'https://via.placeholder.com/64'}" alt="${item.name || 'Unknown Item'}" class="w-16 h-16 rounded-lg object-cover" onerror="this.src='https://via.placeholder.com/64'">
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-white">${item.name || 'N/A'}</h4>
+                                        <p class="text-sm text-gray-400">Qty: ${item.quantity || 0} • Size: ${item.size || 'N/A'} • Color: ${item.color || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            `).join('') : '<p class="text-gray-400">No items found</p>'}
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-zinc-800">
+                            <div class="text-2xl font-bold text-white">Total: ₱${(order.total || 0).toFixed(2)}</div>
+                            ${currentTab === 'pending' ? `
+                                <div class="flex gap-3">
+                                    <button onclick="confirmAcceptOrder('${order.id}')" 
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold">
+                                        Accept
+                                    </button>
+                                    <button onclick="confirmDeclineOrder('${order.id}')" 
+                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold">
+                                        Decline
+                                    </button>
+                                </div>
+                            ` : ''}
+                            ${currentTab === 'active' ? `
+                                <button onclick="completeDelivery('${order.id}')" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Mark as Delivered
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

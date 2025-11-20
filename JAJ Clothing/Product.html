@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product - JAJ Clothing</title>
+  <link rel="stylesheet" href="CSS/product.css">
+  <link rel="stylesheet" href="CSS/checkout.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDy19pPW93gdTisOsKwGw46rcjIMeu1ltM",
+        authDomain: "jaj-clothing-22dbe.firebaseapp.com",
+        projectId: "jaj-clothing-22dbe",
+        storageBucket: "jaj-clothing-22dbe.firebasestorage.app",
+        messagingSenderId: "154288386048",
+        appId: "1:154288386048:web:a96b7a0bef1e9b2a6ba8e5"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <a href="Homepage.html" class="logo">JAJ Clothing</a>
+      <nav class="nav-right">
+        <a href="Collection.html" class="nav-link">Collection</a>
+        <div class="cart-icon" onclick="toggleCart()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7.00488 7.99966V5.99966C7.00488 3.23824 9.24346 0.999664 12.0049 0.999664C14.7663 0.999664 17.0049 3.23824 17.0049 5.99966V7.99966H20.0049C20.5572 7.99966 21.0049 8.44738 21.0049 8.99966V20.9997C21.0049 21.5519 20.5572 21.9997 20.0049 21.9997H4.00488C3.4526 21.9997 3.00488 21.5519 3.00488 20.9997V8.99966C3.00488 8.44738 3.4526 7.99966 4.00488 7.99966H7.00488ZM7.00488 9.99966H5.00488V19.9997H19.0049V9.99966H17.0049V11.9997H15.0049V9.99966H9.00488V11.9997H7.00488V9.99966ZM9.00488 7.99966H15.0049V5.99966C15.0049 4.34281 13.6617 2.99966 12.0049 2.99966C10.348 2.99966 9.00488 4.34281 9.00488 5.99966V7.99966Z"></path>
+          </svg>
+          <div class="cart-count" id="cartCount">0</div>
+        </div>
+        
+        <!-- Auth buttons -->
+        <div class="auth-buttons" id="authButtons">
+          <a href="Register.html" class="nav-link">Login</a>
+          <a href="Register.html" class="sign-up-btn">Sign Up</a>
+        </div>
+        
+        <!-- Profile menu -->
+        <div class="profile-menu" id="profileMenu">
+          <button class="profile-trigger" onclick="toggleProfileDropdown()">
+            <div class="profile-avatar" id="profileAvatar">U</div>
+            <span class="profile-name" id="profileName">User</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M6 8L2 4h8l-4 4z"/>
+            </svg>
+          </button>
+
+          <div class="profile-dropdown" id="profileDropdown">
+            <a href="Profile.html" class="profile-dropdown-item">
+              <svg class="profile-icon" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              My Profile
+            </a>
+
+            <a href="Orderhistory.html" class="profile-dropdown-item">
+              <svg class="profile-icon" viewBox="0 0 24 24">
+                <path d="M13 3c-4.97 0-9 4.03-9 9s4.03 9 9 9
+                        9-4.03 9-9-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7
+                        7-7 7 3.13 7 7-3.13 7-7 7zm-.5-13h-1v6l5.25 3.15.75-1.23-4.5-2.67V6z"/>
+              </svg>
+              Order History
+            </a>
+
+            <a href="#" class="profile-dropdown-item logout" onclick="showLogoutPopup(); return false;">
+              <svg class="profile-icon" viewBox="0 0 24 24">
+                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58
+                        2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2
+                        2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+              </svg>
+              Logout
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Cart Sidebar -->
+  <div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+      <h2>Shopping Cart</h2>
+      <button class="cart-close-btn" onclick="toggleCart()">×</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-total" id="cartTotal">Total: ₱0.00</div>
+    <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
+  </div>
+
+  <!-- Product Detail Page -->
+  <main class="product-detail">
+    <div class="container">
+      <a href="Collection.html" class="back-link">← Back to Collection</a>
+      <div class="product-content">
+        <!-- Product Images -->
+        <div class="product-images">
+          <div class="main-image">
+            <button class="image-arrow left-arrow" onclick="prevImage()">◄</button>
+            <img id="mainImage" src="" alt="Product Image">
+            <button class="image-arrow right-arrow" onclick="nextImage()">►</button>
+          </div>
+          <div class="thumbnail-images">
+            <!-- Thumbnails will be dynamically generated -->
+          </div>
+          <div class="image-indicators">
+            <!-- Indicators will be dynamically generated -->
+          </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="product-info">
+          <h1 class="product-title"></h1>
+          <div class="product-price"></div>
+          <p class="product-description"></p>
+
+          <!-- Color Options -->
+          <div class="product-option">
+            <label class="option-label">Color: <span id="selectedColor">Black</span></label>
+            <div class="color-options"></div>
+          </div>
+
+          <!-- Size Options -->
+          <div class="product-option">
+            <label class="option-label" for="size">Size</label>
+            <div class="size-options"></div>
+          </div>
+
+          <!-- Quantity -->
+          <div class="product-option">
+            <label class="option-label">Quantity</label>
+            <div class="quantity-section">
+              <div class="quantity-controls">
+                <button class="quantity-btn" onclick="decreaseQuantity()">−</button>
+                <input type="number" class="quantity-input" value="1" min="1" id="quantity">
+                <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <button class="btn btn-primary" onclick="addToCart()">Add to cart</button>
+            <button class="btn btn-secondary" id="buyNowButton">Buy it now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-column">
+        <h3>Contact</h3>
+        <p><strong>Address:</strong> 742 Evergreen Terrace, Springfield </p>
+        <p><strong>Phone:</strong> +63962 461 7897</p>
+        <p><strong>Email:</strong> 123johnjose@gmail.com</p>
+        <h4>Follow Us</h4>
+        <div class="social-icons">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-column">
+        <h3>About</h3>
+        <ul>
+          <li><a>About us</a></li>
+          <li><a>Privacy Policy</a></li>
+          <li><a>Terms & Conditions</a></li>
+          <li><a>Contact us</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Shop</h3>
+        <ul>
+          <li><a>Tops</a></li>
+          <li><a>Hoodies</a></li>
+          <li><a>Bottoms</a></li>
+          <li><a>Hats</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2025 JAJ Clothing. All Rights Reserved.
+    </div>
+  </footer>
+
+  <!-- Logout Confirmation Popup -->
+  <div id="logoutPopup" class="modal">
+    <div class="modal-content">
+      <p>Are you sure you want to logout?</p>
+      <button class="confirm-btn" onclick="confirmLogout()">Yes</button>
+      <button class="cancel-btn" onclick="closeLogoutPopup()">No</button>
+    </div>
+  </div>
+
+  <script type="module" src="JS/firebase-config.js"></script>
+  <script src="JS/product.js"></script>
+  <script type="module" src="JS/checkout.js"></script> 
+  <script src="JS/auth.js"></script>
+  <script src="JS/breadcrumb.js"></script>
+
+</body>   
+</html>
